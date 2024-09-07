@@ -9,28 +9,23 @@ import g4f
 import nest_asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 
-# Set the event loop policy for Windows
+
 if os.name == 'nt':
     import asyncio
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-# Apply nest_asyncio to avoid runtime errors
+
 nest_asyncio.apply()
 
-# Set up logging
+
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(name)
+logger = logging.getLogger(__name__)
 
-# Bot token
-TOKEN = "7306482151:AAEVEOwb4P6CwVGSJC0brQyCmF0GFvorFtY"
 
-# MongoDB connection string
-MONGO_CONNECTION_STRING = "mongodb://localhost:27017"  # Update this with your MongoDB connection string
+TOKEN = os.getenv('BOT_TOKEN')
+MONGO_CONNECTION_STRING = os.getenv('MONGODB_STRING')
+RESPONSE_PROBABILITY = 0.5
 
-# Probability of the bot responding to a message (0.0 to 1.0)
-RESPONSE_PROBABILITY = 0.3
-
-# Initialize MongoDB client
 client = AsyncIOMotorClient(MONGO_CONNECTION_STRING)
 db = client.telegram_bot_db
 messages_collection = db.messages
@@ -57,7 +52,7 @@ async def generate_response(prompt):
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Received message: {update.message.text}")
     
-    # Store the message in MongoDB
+    
     message_data = {
         "user_id": update.effective_user.id,
         "username": update.effective_user.username,
@@ -100,7 +95,7 @@ async def send_response(update: Update, context: ContextTypes.DEFAULT_TYPE, resp
     await update.message.reply_text(response)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Main active hoon! Ab maza aayega. 😎 Kuch puchna hai to /ask command ka use karo.")
+    await update.message.reply_text("Main active hoon! Ab maza aayega. 😎")
     logger.info("Bot started and responded to /start command")
 
 async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -116,15 +111,12 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     application = Application.builder().token(TOKEN).build()
-    
-    # Add handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("ask", ask))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    # Start the bot
     logger.info("Starting the bot...")
     application.run_polling()
 
-if name == 'main':
+if __name__ == '__main__':
     main()	
