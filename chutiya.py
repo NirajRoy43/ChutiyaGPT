@@ -19,7 +19,7 @@ if not API_TOKEN or not LOG_CHANNEL_ID:
     logger.error("BOT_TOKEN and LOG_CHANNEL_ID environment variables must be set.")
     exit(1)
 
-RESPONSE_PROBABILITY = 0.5
+RESPONSE_PROBABILITY = 0.3
 
 async def log_message(username, user_id, chat_type, chat_id, text, timestamp, bot):
     try:
@@ -77,7 +77,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if random.random() < RESPONSE_PROBABILITY:
         logger.info('Decided to respond to this message')
-        prompt = f"Start a conversation with {username} based on their message: '{text}'. You are interacting directly with the User. Respond in an engaging manner in Hinglish or English as appropriate. If the message is related to coding or programming, provide a detailed and helpful response."
+        prompt = f"Start a conversation with {username} based on their message: '{text}'. You are interacting directly with the User. Respond in an engaging manner in Hinglish or English as appropriate. If the message is related to coding or programming, provide a detailed and helpful response , also use **heading** instead of ### ."
         response = await generate_response(prompt)
         await update.message.reply_text(response, parse_mode=ParseMode.MARKDOWN)
     else:
