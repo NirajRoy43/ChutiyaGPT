@@ -1,4 +1,4 @@
-python-telegram-bot
+telethon
 pymongo
 nest_asyncio
 g4f
