@@ -11,10 +11,16 @@ logger = logging.getLogger(__name__)
 
 # Environment variables
 API_TOKEN = os.getenv('BOT_TOKEN')
-LOG_CHANNEL_ID = int(os.getenv('LOG_CHANNEL_ID'))
+LOG_CHANNEL_ID = os.getenv('LOG_CHANNEL_ID')
+
+# Check if environment variables are set
+if not API_TOKEN or not LOG_CHANNEL_ID:
+    logger.error("BOT_TOKEN and LOG_CHANNEL_ID environment variables must be set.")
+    exit(1)
+
 RESPONSE_PROBABILITY = 0.5
 
-async def log_message(username, user_id, chat_type, chat_id, text, timestamp):
+async def log_message(username, user_id, chat_type, chat_id, text, timestamp, bot):
     try:
         log_text = f"User: {username} ({user_id})\n"
         log_text += f"Chat: {chat_type} ({chat_id})\n"
@@ -66,11 +72,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     logger.info(f'Received message: {text}')
     
-    await log_message(username, user_id, chat_type, chat_id, text, timestamp)
+    await log_message(username, user_id, chat_type, chat_id, text, timestamp, context.bot)
     
     if random.random() < RESPONSE_PROBABILITY:
         logger.info('Decided to respond to this message')
-        prompt = f"Start a conversation with {username} based on their message: '{text}'.You are Interacting directly with the User. Respond in an engaging manner in Hinglish or English as appropriate. If the message is related to coding or programming, provide a detailed and helpful response."
+        prompt = f"Start a conversation with {username} based on their message: '{text}'. You are interacting directly with the User. Respond in an engaging manner in Hinglish or English as appropriate. If the message is related to coding or programming, provide a detailed and helpful response."
         response = await generate_response(prompt)
         await update.message.reply_text(response, parse_mode=ParseMode.MARKDOWN)
     else:
