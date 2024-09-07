@@ -40,7 +40,7 @@ async def store_message(message_data):
 async def generate_response(prompt):
     try:
         response = await g4f.ChatCompletion.create_async(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
         )
         logger.info(f"Generated response: {response}")
@@ -77,12 +77,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info("Decided not to respond to this message")
 
 async def continue_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, message: str, user_name: str):
-    prompt = f"Continue the conversation with {user_name}. Their latest message is: '{message}'. Respond in a witty and engaging manner in Hindi (use Roman script). Keep it short (max 2 sentences)."
+    prompt = f"Continue the conversation with {user_name}. Their latest message is: '{message}'. Respond to the User as per mood of the message also keep in track previous conversation with them to give a befitting reply"
     response = await generate_response(prompt)
     await send_response(update, context, response)
 
 async def start_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, message: str, user_name: str):
-    prompt = f"Start a conversation with {user_name} based on their message: '{message}'. Respond in a witty and engaging manner in Hindi (use Roman script). Keep it short (max 2 sentences)."
+    prompt = f"Start a conversation with {user_name} based on their message: '{message}'. Respond in an engaging manner in Hinglish or English "
     response = await generate_response(prompt)
     await send_response(update, context, response)
 	
@@ -105,7 +105,7 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Kuch to pucho yaar! /ask ke baad apna sawal likho.")
         return
 
-    prompt = f"Answer this question from {update.effective_user.first_name} in a friendly and informative way: '{question}'. Respond in Hindi (use Roman script). Keep it concise but informative."
+    prompt = f"Answer this question from {update.effective_user.first_name} in a friendly and informative way: '{question}'. Respond in Hinglish or English as per message received from user ."
     response = await generate_response(prompt)
     await update.message.reply_text(response)
 
