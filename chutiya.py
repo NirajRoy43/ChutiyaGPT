@@ -40,6 +40,9 @@ async def generate_response(prompt):
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
         )
+        if not response:
+            logger.warning("Received empty response from the model.")
+            return "I apologize, but I couldn't generate a response."
         logger.info(f"Generated response: {response[:50]}...")
         return response
     except Exception as e:
@@ -48,6 +51,10 @@ async def generate_response(prompt):
 
 async def handle_message(event):
     message = event.message
+    if not message.text:  # Check if the message has text
+        logger.info("Received non-text message, ignoring.")
+        return
+
     user_id = message.sender_id
     username = message.sender.username
     text = message.text
@@ -96,11 +103,12 @@ async def start(event):
 @client.on(events.NewMessage(pattern='/ask'))
 async def ask(event):
     logger.info("Received /ask command")
-    question = event.message.text.split(maxsplit=1)[1:]
+    question = event.message.text.split(maxsplit=1)[1:]  # This returns a list
     if not question:
         await event.reply("Kuch to pucho yaar! /ask ke baad apna sawal likho.", parse_mode='md')
         return
-
+    question = question[0]  # Get the actual question string
+    
     prompt = f"Answer this question from {event.sender.first_name} in a friendly and informative way: '{question}'. If the question is related to coding or programming, provide a detailed and helpful response. Respond in Hinglish or English as appropriate based on the user's question."
     response = await generate_response(prompt)
     await event.reply(response, parse_mode='md')
@@ -108,12 +116,13 @@ async def ask(event):
 @client.on(events.NewMessage)
 async def error_handler(event):
     try:
-        await event.reply("Oops! Something went wrong. Please try again later.", parse_mode='md')
+        await event.reply("Bot me kuch error aaya hai @NemesisRoy ko bolo fix kare 🥱", parse_mode='md')
     except Exception as e:
         logger.error(f"Exception while handling an update: {e}")
         await event.reply(f"An unexpected error occurred: {e}", parse_mode='md')
 
 def signal_handler(signum, frame):
+    logger.info("Received exit signal, disconnecting...")
     loop = asyncio.get_event_loop()
     loop.create_task(client.disconnect())
 
