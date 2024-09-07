@@ -111,6 +111,7 @@ async def error_handler(event):
         await event.reply("Oops! Something went wrong. Please try again later.", parse_mode='md')
     except Exception as e:
         logger.error(f"Exception while handling an update: {e}")
+        await event.reply(f"An unexpected error occurred: {e}", parse_mode='md')
 
 def signal_handler(signum, frame):
     loop = asyncio.get_event_loop()
