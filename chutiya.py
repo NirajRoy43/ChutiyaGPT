@@ -1,7 +1,7 @@
 import random
 import logging
 import os
-from telegram import Update
+from telegram import Update, ParseMode
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import g4f
 
@@ -21,7 +21,7 @@ async def log_message(username, user_id, chat_type, chat_id, text, timestamp):
         log_text += f"Message: {text}\n"
         log_text += f"Timestamp: {timestamp}"
         
-        await bot.send_message(LOG_CHANNEL_ID, log_text, parse_mode='Markdown')
+        await bot.send_message(LOG_CHANNEL_ID, log_text, parse_mode=ParseMode.MARKDOWN)
         logger.info(f"Message logged to channel: {text[:20]}...")
     except Exception as e:
         logger.error(f"Error logging message to channel: {e}")
@@ -42,7 +42,7 @@ async def generate_response(prompt):
         return "I apologize, but I'm having trouble processing your request at the moment. Could you please try again or rephrase your question?"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Main active hoon! Ab maza aayega. 😎")
+    await update.message.reply_text("Main active hoon! Ab maza aayega. 😎", parse_mode=ParseMode.MARKDOWN)
     logger.info("Bot started and responded to /start command")
 
 async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -51,9 +51,9 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
         question = ' '.join(context.args)
         prompt = f"Answer this question from {update.message.from_user.first_name} in a friendly and informative way: '{question}'. If the question is related to coding or programming, provide a detailed and helpful response. Respond in Hinglish or English as appropriate based on the user's question."
         response = await generate_response(prompt)
-        await update.message.reply_text(response)
+        await update.message.reply_text(response, parse_mode=ParseMode.MARKDOWN)
     else:
-        await update.message.reply_text("Kuch to pucho yaar! /ask ke baad apna sawal likho.")
+        await update.message.reply_text("Kuch to pucho yaar! /ask ke baad apna sawal likho.", parse_mode=ParseMode.MARKDOWN)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message
@@ -70,9 +70,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if random.random() < RESPONSE_PROBABILITY:
         logger.info('Decided to respond to this message')
-        prompt = f"Start a conversation with {username} based on their message: '{text}'. Respond in an engaging manner in Hinglish or English as appropriate. If the message is related to coding or programming, provide a detailed and helpful response."
+        prompt = f"Start a conversation with {username} based on their message: '{text}'.You are Interacting directly with the User. Respond in an engaging manner in Hinglish or English as appropriate. If the message is related to coding or programming, provide a detailed and helpful response."
         response = await generate_response(prompt)
-        await update.message.reply_text(response)
+        await update.message.reply_text(response, parse_mode=ParseMode.MARKDOWN)
     else:
         logger.info('Decided not to respond to this message')
 
