@@ -1,0 +1,5 @@
+python-telegram-bot
+pymongo
+nest_ayncio
+g4f
+motor
