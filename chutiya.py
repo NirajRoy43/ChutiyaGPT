@@ -3,6 +3,7 @@ import asyncio
 import logging
 import os
 import signal
+import re
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import g4f
@@ -15,6 +16,11 @@ logger = logging.getLogger(__name__)
 TOKEN = os.getenv('BOT_TOKEN')
 LOG_CHANNEL_ID = os.getenv('LOG_CHANNEL_ID')
 RESPONSE_PROBABILITY = 0.5
+
+# Function to escape special characters for MarkdownV2
+def escape_markdown_v2(text: str) -> str:
+    escape_chars = r'_*[]()~`>#+-=|{}.!'
+    return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
 
 async def log_message(context: ContextTypes.DEFAULT_TYPE, message_data: dict):
     try:
@@ -77,12 +83,17 @@ async def start_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE,
     await send_response(update, context, response)
 
 async def send_response(update: Update, context: ContextTypes.DEFAULT_TYPE, response: str):
+    # Escape the response for MarkdownV2
+    escaped_response = escape_markdown_v2(response)
+    
     wait_time = random.uniform(0.5, 2)
     logger.info(f"Waiting for {wait_time:.2f} seconds before responding")
     await asyncio.sleep(wait_time)
     
-    logger.info(f"Sending response: {response[:50]}...")
-    await update.message.reply_text(response)
+    logger.info(f"Sending response: {escaped_response[:50]}...")
+    
+    # Send the response using MarkdownV2 parsing
+    await update.message.reply_text(escaped_response, parse_mode="MarkdownV2")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Main active hoon! Ab maza aayega. 😎")
