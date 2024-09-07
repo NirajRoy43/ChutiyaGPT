@@ -3,3 +3,4 @@ pymongo
 nest_asyncio
 g4f
 motor
+curl_cffi
