@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 TOKEN = os.getenv('BOT_TOKEN')
 LOG_CHANNEL_ID = os.getenv('LOG_CHANNEL_ID')
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
-RESPONSE_PROBABILITY = 0.5
+RESPONSE_PROBABILITY = 0.3
 
 anthropic = Anthropic(api_key=ANTHROPIC_API_KEY)
 
