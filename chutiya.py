@@ -2,19 +2,19 @@ import random
 import asyncio
 import logging
 import os
+import signal
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from anthropic import AsyncAnthropic
+import g4f
 
+# Configure logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Environment variables
 TOKEN = os.getenv('BOT_TOKEN')
 LOG_CHANNEL_ID = os.getenv('LOG_CHANNEL_ID')
-ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 RESPONSE_PROBABILITY = 0.5
-
-anthropic = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
 
 async def log_message(context: ContextTypes.DEFAULT_TYPE, message_data: dict):
     try:
@@ -30,13 +30,12 @@ async def log_message(context: ContextTypes.DEFAULT_TYPE, message_data: dict):
 
 async def generate_response(prompt):
     try:
-        response = await anthropic.completions.create(
-            model="claude-3-haiku",
-            max_tokens_to_sample=2000,
-            prompt=f"Human: {prompt}\n\nAssistant:"
+        response = await g4f.ChatCompletion.create_async(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
         )
-        logger.info(f"Generated response: {response.completion[:50]}...")
-        return response.completion
+        logger.info(f"Generated response: {response[:50]}...")
+        return response
     except Exception as e:
         logger.error(f"Error generating response: {e}")
         return "I apologize, but I'm having trouble processing your request at the moment. Could you please try again or rephrase your question?"
@@ -105,15 +104,27 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     if update and isinstance(update, Update) and update.effective_message:
         await update.effective_message.reply_text("Oops! Something went wrong. Please try again later.")
 
+async def stop_bot(application: Application):
+    await application.stop()
+    await application.shutdown()
+
+def signal_handler(signum, frame):
+    asyncio.create_task(stop_bot(application))
+
 def main():
+    global application
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("ask", ask))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_error_handler(error_handler)
     
+    # Register the signal handler
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
     logger.info("Starting the bot...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
+    application.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True, close_loop=False)
 
 if __name__ == '__main__':
     main()
