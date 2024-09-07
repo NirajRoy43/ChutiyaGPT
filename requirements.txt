@@ -1,5 +1,5 @@
 python-telegram-bot
 pymongo
-nest_ayncio
+nest_asyncio
 g4f
 motor
